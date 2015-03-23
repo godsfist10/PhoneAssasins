@@ -1,0 +1,36 @@
+
+//GET AWS CREDS
+// Initialize the Amazon Cognito credentials provider
+CognitoAWSCredentials credentials = new CognitoAWSCredentials (
+    "us-east-1:183a8619-0cf4-43bd-bb64-18cfe0038fd0", // Identity Pool ID
+    RegionEndpoint.USEast1 // Region
+);
+
+
+//STORE USER DATA
+// Initialize the Cognito Sync client
+CognitoSyncManager syncManager = new DefaultCognitoSyncManager (
+    credentials,
+    new AmazonCognitoSyncConfig {
+        RegionEndpoint = RegionEndpoint.USEast1 // Region
+    }
+);
+
+// Create a record in a dataset and synchronize with the server
+Dataset dataset = syncManager.OpenOrCreateDataset ("myDataset");
+dataset.OnSyncSuccess += SyncSuccessCallback;
+dataset.Put("myKey", "myValue");
+dataset.Synchronize();
+
+
+void SyncSuccessCallback(object sender, SyncSuccessEvent e) {
+    // Your handler code here
+}
+
+
+
+Copy the code under Step 1: Initialize the Cognito client and save it somewhere. This code will not be displayed again. The code shows how to initialize a CognitoAWSCredentials object. The parameters to the CognitoAWSCredentials constructor are (in order):
+AWS account number
+Identity pool ID
+Default unauthenticated role ID
+Default authenticated role ID
