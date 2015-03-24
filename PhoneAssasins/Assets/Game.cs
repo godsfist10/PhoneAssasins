@@ -4,13 +4,16 @@ using Amazon;
 
 public class Game : MonoBehaviour {
 
+    private bool isHost = false;
+
 	// Use this for initialization
-	void Start () {
+	void Start () 
+    {
+	    
+	}   
 	
-	}
-	
+    
+
 	// Update is called once per frame
-	void Update () {
-	
-	}
+    //_TextRect = GUILayoutUtility.GetRect(new GUIContent(_Longest), "button");
 }

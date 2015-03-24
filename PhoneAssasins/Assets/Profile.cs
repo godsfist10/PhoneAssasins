@@ -9,8 +9,6 @@ public class Profile : MonoBehaviour {
     public int _KillCount;
     public int _TotalKillCount;
 
-
-
 	// Use this for initialization
 	void Start ()
     {
