@@ -3,23 +3,40 @@ using System.Collections;
 
 public class Profile : MonoBehaviour {
 
-    public string _Name;
-    public Texture2D _Picture; //maybe
-    public string _Bio;
-    public int _KillCount;
-    public int _TotalKillCount;
+    public int _userId;
+    public string _name;
+    public int _killCount;
+    public int _gamesPlayed;
+    public int _gamesWon;
 
 	// Use this for initialization
 	void Start ()
     {
-        _KillCount = 0;
-        _Name = "";
-        _Bio = "";
+        _killCount = 0;
+        _name = "";
 
 	}
 	
-    void Init(string name)
+    void Init(string name, int userId, int killCount, int gamesPlayed, int gamesWon)
     {
-        _Name = name;
+        _name = name;
+        _killCount = killCount;
+        _userId = userId;
+        _gamesPlayed = gamesPlayed;
+        _gamesWon = gamesWon;
     }
+
+    public void SetName(string name)
+    {
+        _name = name;
+
+    }
+
+    public void SetName(Object nameObject)
+    {
+        GameObject temp = (GameObject)nameObject;
+        UnityEngine.UI.Text text = (UnityEngine.UI.Text)temp.GetComponent("Text");
+        SetName(text.text);
+    }
+
 }
