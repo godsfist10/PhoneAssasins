@@ -449,7 +449,7 @@ public class PhpInterface : MonoBehaviour {
                     Debug.Log(output);
                     break;
                 default:
-                    Debug.Log("Returning data: " + output);
+                    Debug.Log("Returning data: " + output); 
                     goodOut = true;
                     break;
             }
