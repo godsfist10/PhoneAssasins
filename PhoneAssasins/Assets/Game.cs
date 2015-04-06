@@ -7,7 +7,9 @@ public enum SCREENSTATE {
     START_SCREEN,
     LOBBY_SELECTION,
     LOBBY_SCREEN,
-    IN_GAME
+    PROFILE_VIEW,
+    IN_GAME,
+    NULL
 };
 
 
@@ -17,17 +19,22 @@ public class Game : MonoBehaviour {
     public GameObject lobbySelectionScreenButtonGroup;
     public GameObject lobbyScreenButtonGroup;
     public GameObject InGameScreenButtonGroup;
+    public GameObject profileViewScreenButtonGroup;
 
     private bool loggedIn = false;
     private SCREENSTATE currentScreen;
+    private SCREENSTATE previousScreen;
 
     public PhpInterface myInterface = null;
     public Profile myProfile = null;
     public CreateLobbys createLobbiesScript;
+    public Lobby lobbyHandlerScript;
+    public StartScreen startScreenHandler;
 
 	// Use this for initialization
 	void Start () 
     {
+        previousScreen = SCREENSTATE.NULL;
         currentScreen = SCREENSTATE.START_SCREEN;
 	    if(myInterface == null)
         {
@@ -37,14 +44,6 @@ public class Game : MonoBehaviour {
         {
             Debug.Log("you had one more job.... give me my profile");
         }
-
-        if (PlayerPrefs.HasKey("UserID"))
-        {
-            myProfile._userId = PlayerPrefs.GetInt("UserID");
-            loggedIn = true;
-            UpdateUserData();
-            ChangeScreenState(SCREENSTATE.START_SCREEN, SCREENSTATE.LOBBY_SELECTION);
-        }
 	}   
 
     public void Update()
@@ -53,12 +52,6 @@ public class Game : MonoBehaviour {
         {
             //change screens to lobby selection
         }
-    }
-
-    public void CreateNewUser()
-    {
-        //Debug.Log("Create New User Button Pressed");
-        StartCoroutine(myInterface.createUserData(myProfile._name));
     }
 
     public void LoggedIn(bool val)
@@ -73,26 +66,41 @@ public class Game : MonoBehaviour {
 
     public void ChangeScreenState(SCREENSTATE from, SCREENSTATE to)
     {
+        SCREENSTATE changeTo = to;
+
         switch(from)
         {
             case SCREENSTATE.START_SCREEN:
-                startScreenButtonGroup.SetActive(false);
+                startScreenHandler.HideYoSelf();
                 break;
             case SCREENSTATE.LOBBY_SELECTION:
                 createLobbiesScript.HideYoSelf();
                 break;
+            case SCREENSTATE.LOBBY_SCREEN:
+                lobbyHandlerScript.HideYoSelf();
+                break;
+            case SCREENSTATE.PROFILE_VIEW:
+                changeTo = previousScreen;
+                break;
         }
 
-        switch(to)
+        switch (changeTo)
         {
             case SCREENSTATE.LOBBY_SELECTION:
                 createLobbiesScript.showYoSelf(myProfile._userId);
+                currentScreen = SCREENSTATE.LOBBY_SELECTION;
                 break;
             case SCREENSTATE.START_SCREEN:
-                startScreenButtonGroup.SetActive(true);
-                PlayerPrefs.DeleteKey("UserID");
+                startScreenHandler.ShowYoSelf();
+                currentScreen = SCREENSTATE.START_SCREEN;
                 break;
-
+            case SCREENSTATE.LOBBY_SCREEN:
+                if (to == SCREENSTATE.NULL)
+                {
+                    Refresh();
+                }
+                currentScreen = SCREENSTATE.LOBBY_SCREEN;
+                break;
         }
     }
 
@@ -102,6 +110,10 @@ public class Game : MonoBehaviour {
         {
             createLobbiesScript.showYoSelf(myProfile._userId);
         }
+        else if( currentScreen == SCREENSTATE.LOBBY_SCREEN)
+        {
+            lobbyHandlerScript.ShowYoSelf(-1, true);
+        }
     }
 
     public void Logout()
@@ -109,18 +121,58 @@ public class Game : MonoBehaviour {
         ChangeScreenState(SCREENSTATE.LOBBY_SELECTION, SCREENSTATE.START_SCREEN);
     }
 
-    public void AttemptToEnterLobby(Object lobbyButton)
+    public void AttemptToJoinLobby(Object lobbyButton)
     {
         Debug.Log("attempting to enter lobby");
+        LobbySelectionButton buttonScript = ((GameObject)lobbyButton).GetComponent<LobbySelectionButton>();
+        StartCoroutine(myInterface.userJoinLobby(myProfile._userId, buttonScript.mlobbyID));
     }
 
-    public void createLobby()
+    public void EnterLobby(Object lobbyButton)
     {
-        //myInterface.createLobbyData(myProfile._userId, )
-        StartCoroutine(myInterface.createLobbyData(myProfile._userId, createLobbiesScript.NewLobbyName));
-        
+        LobbySelectionButton buttonScript = ((GameObject)lobbyButton).GetComponent<LobbySelectionButton>();
+        Debug.Log("entering lobby: '" + buttonScript.lobbyName + "'");
+        ChangeScreenState(currentScreen, SCREENSTATE.LOBBY_SCREEN);
+        lobbyHandlerScript.ShowYoSelf(buttonScript.mlobbyID, false, buttonScript.mIsHost);
     }
 
-	// Update is called once per frame
-    //_TextRect = GUILayoutUtility.GetRect(new GUIContent(_Longest), "button");
+    public void ViewProfile(Object userButton)
+    {
+        UserButton buttonScript = ((GameObject)userButton).GetComponent<UserButton>();
+        Debug.Log("Attempting to view profile of: '" + buttonScript.mUserName + "'");
+        //previousScreen = currentScreen;
+        //IMPLEMENT SWAP TO PROFILE VIEW
+
+    }
+
+    public void BackButton()
+    {
+        //ChangeScreenState(SCREENSTATE)
+    }
+
+    public Profile getMyProfile()
+    {
+        return myProfile;
+    }
+
+    public PhpInterface getMyInterface()
+    {
+        return myInterface;
+    }
+
+    public CreateLobbys getLobbyCreationScript()
+    {
+        return createLobbiesScript;
+    }
+
+    public StartScreen getStartScreenScript()
+    {
+        return startScreenHandler;
+    }
+
+    public Lobby getLobbyHandler()
+    {
+        return lobbyHandlerScript;
+    }
+	
 }

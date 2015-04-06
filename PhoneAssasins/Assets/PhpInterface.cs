@@ -5,9 +5,9 @@ public class PhpInterface : MonoBehaviour {
 
     public const string SECRET = "Rlb7UT6UlQr0TpW";
     private const string FUNCTIONSURL = "http://www.mattstruble.com/PhoneAssassins/Functions/";
-    public Profile myProfile = null;
     public Game myGame = null;
-    public CreateLobbys lobbyButtonCreator;
+    private Profile myProfile = null;
+    private CreateLobbys lobbyButtonCreator;
 
     public string Md5Sum(string strToEncrypt)
     {
@@ -29,14 +29,24 @@ public class PhpInterface : MonoBehaviour {
         return hashString.PadLeft(32, '0');
     }
 
+    public void Start()
+    {
+        if (myGame == null)
+            Debug.Log("attach Game script to PHPinterface");
+        else
+        {
+            myProfile = myGame.getMyProfile();
+            lobbyButtonCreator = myGame.getLobbyCreationScript();
+        }
+    }
     //Inputs
 
-    public IEnumerator createUserData(string username)
+    public IEnumerator createUserData(string username, string password)
     {
         string urlCall = FUNCTIONSURL + "create_user_data.php?";
-        string hash = Md5Sum(username + SECRET);
-
-        string post_url = urlCall + "username=" + WWW.EscapeURL(username) + "&hash=" + hash;
+        string passHash = Md5Sum(password + SECRET);
+        string hash = Md5Sum(username + passHash + SECRET);
+        string post_url = urlCall + "username=" + WWW.EscapeURL(username) + "&password=" + passHash + "&hash=" + hash;
 
         WWW hs_post = new WWW(post_url);
         yield return hs_post; // Wait until the download is done
@@ -51,14 +61,57 @@ public class PhpInterface : MonoBehaviour {
             switch (output)
             {
                 case "WRONG_HASH":
+                    Debug.Log(output);
+                    break;
+                case "USERNAME_TAKEN":
+                    Debug.Log(output);
+                    myGame.getStartScreenScript().UsernameTaken();
+                    break;
                 case "USER_CREATED":
-                case "USER_ALREADY_EXISTS":
                     Debug.Log(output);
                     break;
                 default:
+                    Debug.Log(output);
                     myProfile._userId = int.Parse(output);
                     Debug.Log("User Id: " + output);
                     PlayerPrefs.SetInt("UserID", myProfile._userId);
+                    myGame.UpdateUserData();
+                    myGame.LoggedIn(true);
+                    myGame.ChangeScreenState(SCREENSTATE.START_SCREEN, SCREENSTATE.LOBBY_SELECTION);
+                    break;
+            }
+        }
+    }
+
+    public IEnumerator userLogin(string username, string password)
+    {
+        string urlCall = FUNCTIONSURL + "user_login.php?";
+        string passHash = Md5Sum(password + SECRET);
+        string hash = Md5Sum(username + passHash + SECRET);
+        string post_url = urlCall + "username=" + WWW.EscapeURL(username)+ "&password=" + passHash + "&hash=" + hash;
+
+        WWW hs_post = new WWW(post_url);
+        yield return hs_post; // Wait until the download is done
+
+        if (hs_post.error != null)
+        {
+            Debug.Log("There was an error with hs_post: " + hs_post.error);
+        }
+        else
+        {
+            string output = hs_post.text;
+            switch (output)
+            {
+                case "WRONG_HASH":
+                    Debug.Log(output);
+                    break;
+                case "USER_NOT_FOUND":
+                    myGame.getStartScreenScript().IncorrectInformation();
+                    Debug.Log(output);
+                    break;
+                default:    
+                    myProfile._userId = int.Parse(output);
+                    myGame.LoggedIn(true);
                     myGame.UpdateUserData();
                     myGame.ChangeScreenState(SCREENSTATE.START_SCREEN, SCREENSTATE.LOBBY_SELECTION);
                     break;
@@ -86,9 +139,11 @@ public class PhpInterface : MonoBehaviour {
             switch (output)
             {
                 case "WRONG_HASH":  
-                case "USER_REMOVED":
                 case "LOBBY_NOT_FOUND":
                     Debug.Log(output);
+                    break;
+                case "USER_REMOVED":
+                    myGame.Refresh();
                     break;
                 default:
                     Debug.Log("Output not consistant with list: " + output);
@@ -99,12 +154,14 @@ public class PhpInterface : MonoBehaviour {
 
     public IEnumerator userJoinLobby(int userID, int lobbyID)
     {
+        Debug.Log("Userid: " + userID + "\nLobbyId: " + lobbyID);
         string urlCall = FUNCTIONSURL + "user_join_lobby.php?";
         string hash = Md5Sum(userID + lobbyID + SECRET);
 
         string post_url = urlCall + "userid=" + userID + "&lobbyid=" + lobbyID + "&hash=" + hash;
-
+        Debug.Log("PostUrl:  " + post_url);
         WWW hs_post = new WWW(post_url);
+       
         yield return hs_post; // Wait until the download is done
 
         if (hs_post.error != null)
@@ -117,10 +174,12 @@ public class PhpInterface : MonoBehaviour {
             switch (output)
             {
                 case "WRONG_HASH":
-                case "USER_ADDED":
                 case "USER_ALREADY_ADDED":
                 case "LOBBY_NOT_FOUND":
                     Debug.Log(output);
+                    break;
+                case "USER_ADDED":
+                    myGame.Refresh();
                     break;
                 default:
                     Debug.Log("Output not consistant with list: " + output);
@@ -213,12 +272,13 @@ public class PhpInterface : MonoBehaviour {
                     Debug.Log(output);
                     break;
                 default:
+                    myGame.getLobbyCreationScript().LobbyCreated();
                     Debug.Log("Lobby ID:  " + output);
                     break;
             }
         }
     }
-    
+   
     //Outputs
 
     public IEnumerator getUserData(int userID)
@@ -255,15 +315,15 @@ public class PhpInterface : MonoBehaviour {
             {
                // username,kills,wins,plays,updated
                 string[] splitOutput = output.Split(',');
-                Debug.Log("Username:  " + splitOutput[0]);
+                //Debug.Log("Username:  " + splitOutput[0]);
                 myProfile._name = splitOutput[0];
-                Debug.Log("Kills:  " + splitOutput[1]);
+                //Debug.Log("Kills:  " + splitOutput[1]);
                 myProfile._killCount = int.Parse(splitOutput[1]);
-                Debug.Log("Wins:  " + splitOutput[2]);
+                //Debug.Log("Wins:  " + splitOutput[2]);
                 myProfile._gamesWon = int.Parse(splitOutput[2]);
-                Debug.Log("Plays:  " + splitOutput[3]);
+                //Debug.Log("Plays:  " + splitOutput[3]);
                 myProfile._gamesPlayed = int.Parse(splitOutput[3]);
-                Debug.Log("Updated:  " + splitOutput[4]);
+                //Debug.Log("Updated:  " + splitOutput[4]);
             }
         }
     }
@@ -319,6 +379,57 @@ public class PhpInterface : MonoBehaviour {
         }
     }
 
+    public IEnumerator getLobbyUsers_Output(int lobbyID)
+    {
+        string urlCall = FUNCTIONSURL + "get_lobby_users.php?";
+        string hash = Md5Sum(lobbyID + SECRET);
+
+        string post_url = urlCall + "lobbyid=" + lobbyID + "&hash=" + hash;
+
+        WWW hs_post = new WWW(post_url);
+        yield return hs_post; // Wait until the download is done
+
+        if (hs_post.error != null)
+        {
+            Debug.Log("There was an error with hs_post: " + hs_post.error);
+        }
+        else
+        {
+            string output = hs_post.text;
+            bool goodOut = false;
+            switch (output)
+            {
+                case "WRONG_HASH":
+                case "NOT_FOUND":
+                    Debug.Log(output);
+                    break;
+                default:
+                    Debug.Log("Returning data: " + output);
+                    goodOut = true;
+                    break;
+            }
+
+            if (goodOut)
+            {
+                //userid,targetid,updated,created|userid,targetid
+                string[] splitOutput = output.Split('|');
+
+                int numberOfPeopleInLobby = splitOutput.Length;
+
+                for (int i = 0; i < numberOfPeopleInLobby -1; i++)
+                {
+                    //userid,targetid,updated,created
+                    string[] userData = splitOutput[i].Split(',');
+                    Debug.Log("UserID:  " + userData[0]);
+                    /*Debug.Log("TargetID:  " + userData[1]);
+                    Debug.Log("Updated:  " + userData[2]);
+                    Debug.Log("Created:  " + userData[3]);*/
+                }
+
+            }
+        }
+    }
+
     public IEnumerator getLobbyData(int lobbyID)
     {
         string urlCall = FUNCTIONSURL + "get_lobby_data.php?";
@@ -356,8 +467,8 @@ public class PhpInterface : MonoBehaviour {
                 Debug.Log("Lobby Name:  " + lobbyData[0]);
                 Debug.Log("Host ID:  " + lobbyData[1]);
                 Debug.Log("Game Started (0 false; 1 true):  " + lobbyData[2]);
-                Debug.Log("Updated:  " + lobbyData[3]);
-                Debug.Log("Created:  " + lobbyData[3]);
+                //Debug.Log("Updated:  " + lobbyData[3]);
+                //Debug.Log("Created:  " + lobbyData[3]);
             }
         }
     }
@@ -387,7 +498,7 @@ public class PhpInterface : MonoBehaviour {
                     Debug.Log(output);
                     break;
                 default:
-                    Debug.Log("Returning data: " + output);
+                    //Debug.Log("Returning data: " + output);
                     goodOut = true;
                     break;
             }
@@ -396,8 +507,48 @@ public class PhpInterface : MonoBehaviour {
             {
                 //lobbyname,hostid,gamestarted,updated,created
                 string[] lobbyData = output.Split(',');
-                Debug.Log("Lobby Name:  " + lobbyData[0]);
+                //Debug.Log("Lobby Name:  " + lobbyData[0]);
                 lobbyButtonCreator.CreateLobbyButton(lobbyData[0], lobbyID);
+            }
+        }
+    }
+
+    public IEnumerator createHostedLobbyButton(int lobbyID)
+    {
+        string urlCall = FUNCTIONSURL + "get_lobby_data.php?";
+        string hash = Md5Sum(lobbyID + SECRET);
+
+        string post_url = urlCall + "lobbyid=" + lobbyID + "&hash=" + hash;
+
+        WWW hs_post = new WWW(post_url);
+        yield return hs_post; // Wait until the download is done
+
+        if (hs_post.error != null)
+        {
+            Debug.Log("There was an error with hs_post: " + hs_post.error);
+        }
+        else
+        {
+            string output = hs_post.text;
+            bool goodOut = false;
+            switch (output)
+            {
+                case "WRONG_HASH":
+                case "NOT_FOUND":
+                    Debug.Log(output);
+                    break;
+                default:
+                    //Debug.Log("Returning data: " + output);
+                    goodOut = true;
+                    break;
+            }
+
+            if (goodOut)
+            {
+                //lobbyname,hostid,gamestarted,updated,created
+                string[] lobbyData = output.Split(',');
+                //Debug.Log("Lobby Name:  " + lobbyData[0]);
+                lobbyButtonCreator.CreateHostLobbyButton(lobbyData[0], lobbyID);
             }
         }
     }
@@ -422,11 +573,15 @@ public class PhpInterface : MonoBehaviour {
             bool goodOut = false;
             switch (output)
             {
+                case "WRONG_HASH":
+                    Debug.Log(output);
+                    break;
                 case "":
+                case "COULD_NOT_FIND_LOBBIES":
                     Debug.Log("No Lobbies Available");
                     break;
                 default:
-                    Debug.Log("Returning data: " + output);
+                    //Debug.Log("Returning data: " + output);
                     goodOut = true;
                     break;
             }
@@ -437,10 +592,63 @@ public class PhpInterface : MonoBehaviour {
                 string[] AvailableLobbies = output.Split(',');
                 for (int i = 0; i < AvailableLobbies.Length; i++)
                 {
-                    Debug.Log("Lobby ID:  " + AvailableLobbies[i]);
+                    //Debug.Log("Lobby ID:  " + AvailableLobbies[i]);
                     StartCoroutine(createLobbyButton(int.Parse(AvailableLobbies[i])));
                 }
             }
         }
     }
+
+    public IEnumerator GetHostedLobbies(int userId)
+    {
+        string urlCall = FUNCTIONSURL + "get_hosted_lobbies.php?";
+        string hash = Md5Sum(userId + SECRET);
+
+        string post_url = urlCall + "userid=" + userId + "&hash=" + hash;
+
+        WWW hs_post = new WWW(post_url);
+        yield return hs_post; // Wait until the download is done
+
+        if (hs_post.error != null)
+        {
+            Debug.Log("There was an error with hs_post: " + hs_post.error);
+        }
+        else
+        {
+            string output = hs_post.text;
+            bool goodOut = false;
+            switch (output)
+            {
+                case "WRONG_HASH":
+                    Debug.Log(output);
+                    break;
+                case "":
+                case "COULD_NOT_FIND_LOBBIES":
+                    Debug.Log("No Lobbies You Host Available");
+                    break;
+                default:
+                    //Debug.Log("Returning data: " + output);
+                    goodOut = true;
+                    break;
+            }
+
+            if (goodOut)
+            {
+                //lobbyname,hostid,gamestarted,updated,created
+                string[] AvailableLobbies = output.Split(',');
+                for (int i = 0; i < AvailableLobbies.Length; i++)
+                {
+                    //Debug.Log("Lobby ID:  " + AvailableLobbies[i]);
+                    StartCoroutine(createHostedLobbyButton(int.Parse(AvailableLobbies[i])));
+                }
+            }
+        }
+    }
+    /*
+    get_hosted_lobbies.php
+receives: userid, hash
+
+returns lobbyid,lobbyid,...
+or COULD_NOT_FIND_LOBBIES
+     */
 }

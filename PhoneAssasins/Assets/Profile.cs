@@ -5,6 +5,8 @@ public class Profile : MonoBehaviour {
 
     public int _userId;
     public string _name;
+    public string _tempPass;
+    private string _tempPassCheck;
     public int _killCount;
     public int _gamesPlayed;
     public int _gamesWon;
@@ -37,6 +39,40 @@ public class Profile : MonoBehaviour {
         GameObject temp = (GameObject)nameObject;
         UnityEngine.UI.Text text = (UnityEngine.UI.Text)temp.GetComponent("Text");
         SetName(text.text);
+    }
+
+    public void SetPass(Object passObject)
+    {
+        GameObject temp = (GameObject)passObject;
+        UnityEngine.UI.Text text = (UnityEngine.UI.Text)temp.GetComponent("Text");
+        SetPass(text.text);
+
+    }
+
+    private void SetPass(string pass)
+    {
+        _tempPass = pass;
+    }
+
+    public void SetPassCheck(Object passObject)
+    {
+        GameObject temp = (GameObject)passObject;
+        UnityEngine.UI.Text text = (UnityEngine.UI.Text)temp.GetComponent("Text");
+        SetPassCheck(text.text);
+
+    }
+
+    private void SetPassCheck(string pass)
+    {
+        _tempPassCheck = pass;
+    }
+
+    public bool passwordCheck()
+    {
+        if (_tempPass == _tempPassCheck)
+            return true;
+        else
+            return false;
     }
 
 }
