@@ -11,6 +11,7 @@ public class CreateLobbys : MonoBehaviour {
     public GameObject InvalidLobbyNameText;
     public GameObject LobbyCreatedText;
     public GameObject RefreshButton;
+    public GameObject NewLobbyInputField;
 
     public GameObject ButtonParentObject;
     public string NewLobbyName;
@@ -130,6 +131,11 @@ public class CreateLobbys : MonoBehaviour {
         GameObject temp = (GameObject)button;
         UnityEngine.UI.Text text = (UnityEngine.UI.Text)temp.GetComponent("Text");
         NewLobbyName = text.text;
+    }
+
+    public void BackButtonPressed()
+    {
+        myGame.ChangeScreenState(SCREENSTATE.LOBBY_SELECTION, SCREENSTATE.MAIN_MENU);
     }
 
 }

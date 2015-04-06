@@ -76,8 +76,7 @@ public class PhpInterface : MonoBehaviour {
                     Debug.Log("User Id: " + output);
                     PlayerPrefs.SetInt("UserID", myProfile._userId);
                     myGame.UpdateUserData();
-                    myGame.LoggedIn(true);
-                    myGame.ChangeScreenState(SCREENSTATE.START_SCREEN, SCREENSTATE.LOBBY_SELECTION);
+                    myGame.ChangeScreenState(SCREENSTATE.START_SCREEN, SCREENSTATE.MAIN_MENU);
                     break;
             }
         }
@@ -111,9 +110,8 @@ public class PhpInterface : MonoBehaviour {
                     break;
                 default:    
                     myProfile._userId = int.Parse(output);
-                    myGame.LoggedIn(true);
                     myGame.UpdateUserData();
-                    myGame.ChangeScreenState(SCREENSTATE.START_SCREEN, SCREENSTATE.LOBBY_SELECTION);
+                    myGame.ChangeScreenState(SCREENSTATE.START_SCREEN, SCREENSTATE.MAIN_MENU);
                     break;
             }
         }
@@ -122,9 +120,9 @@ public class PhpInterface : MonoBehaviour {
     public IEnumerator userLeaveLobby(int userID, int lobbyID)
     {
         string urlCall = FUNCTIONSURL + "user_leave_lobby.php?";
-        string hash = Md5Sum(userID + lobbyID + SECRET);
+        string hash = Md5Sum(userID.ToString() + lobbyID.ToString() + SECRET);
 
-        string post_url = urlCall + "userid=" + userID + "&lobbyid=" + lobbyID + "&hash=" + hash;
+        string post_url = urlCall + "userid=" + userID.ToString() + "&lobbyid=" + lobbyID.ToString() + "&hash=" + hash;
 
         WWW hs_post = new WWW(post_url);
         yield return hs_post; // Wait until the download is done
@@ -154,12 +152,11 @@ public class PhpInterface : MonoBehaviour {
 
     public IEnumerator userJoinLobby(int userID, int lobbyID)
     {
-        Debug.Log("Userid: " + userID + "\nLobbyId: " + lobbyID);
         string urlCall = FUNCTIONSURL + "user_join_lobby.php?";
-        string hash = Md5Sum(userID + lobbyID + SECRET);
+        string hash = Md5Sum(userID.ToString() + lobbyID.ToString() + SECRET);
 
-        string post_url = urlCall + "userid=" + userID + "&lobbyid=" + lobbyID + "&hash=" + hash;
-        Debug.Log("PostUrl:  " + post_url);
+        string post_url = urlCall + "userid=" + userID.ToString() + "&lobbyid=" + lobbyID.ToString() + "&hash=" + hash;
+        //Debug.Log("PostUrl:  " + post_url);
         WWW hs_post = new WWW(post_url);
        
         yield return hs_post; // Wait until the download is done
@@ -328,6 +325,54 @@ public class PhpInterface : MonoBehaviour {
         }
     }
 
+    public IEnumerator getOtherUserData(int userID)
+    {
+        string urlCall = FUNCTIONSURL + "get_user_data.php?";
+        string hash = Md5Sum(userID.ToString() + SECRET);
+
+        string post_url = urlCall + "userid=" + userID.ToString() + "&hash=" + hash;
+
+        WWW hs_post = new WWW(post_url);
+        yield return hs_post; // Wait until the download is done
+
+        if (hs_post.error != null)
+        {
+            Debug.Log("There was an error with hs_post: " + hs_post.error);
+        }
+        else
+        {
+            string output = hs_post.text;
+            bool goodOut = false;
+            switch (output)
+            {
+                case "WRONG_HASH":
+                case "NOT_FOUND":
+                    Debug.Log(output);
+                    break;
+                default:
+                    Debug.Log("Returning data: " + output);
+                    goodOut = true;
+                    break;
+            }
+
+            if (goodOut)
+            {
+                ProfileViewer temp = myGame.getProfileViewer();
+                // username,kills,wins,plays,updated
+                string[] splitOutput = output.Split(',');
+                //Debug.Log("Username:  " + splitOutput[0]);
+                temp.UsernameText.text = splitOutput[0];
+                //Debug.Log("Kills:  " + splitOutput[1]);
+                temp.KillsText.text = splitOutput[1];
+                //Debug.Log("Wins:  " + splitOutput[2]);
+                temp.WinsText.text = splitOutput[2];
+                //Debug.Log("Plays:  " + splitOutput[3]);
+                temp.PlayedText.text = splitOutput[3];
+                //Debug.Log("Updated:  " + splitOutput[4]);
+            }
+        }
+    }
+
     public IEnumerator getLobbyUsers(int lobbyID)
     {
         string urlCall = FUNCTIONSURL + "get_lobby_users.php?";
@@ -416,16 +461,57 @@ public class PhpInterface : MonoBehaviour {
 
                 int numberOfPeopleInLobby = splitOutput.Length;
 
-                for (int i = 0; i < numberOfPeopleInLobby -1; i++)
+                for (int i = 0; i < numberOfPeopleInLobby - 1; i++)
                 {
                     //userid,targetid,updated,created
                     string[] userData = splitOutput[i].Split(',');
                     Debug.Log("UserID:  " + userData[0]);
+                    StartCoroutine(getUserButtonData(int.Parse(userData[0])));
+                    //myGame.getLobbyHandler().CreateUserButton()
                     /*Debug.Log("TargetID:  " + userData[1]);
                     Debug.Log("Updated:  " + userData[2]);
                     Debug.Log("Created:  " + userData[3]);*/
                 }
 
+            }
+        }
+    }
+
+    public IEnumerator getUserButtonData(int userID)
+    {
+        string urlCall = FUNCTIONSURL + "get_user_data.php?";
+        string hash = Md5Sum(userID + SECRET);
+
+        string post_url = urlCall + "userid=" + userID + "&hash=" + hash;
+
+        WWW hs_post = new WWW(post_url);
+        yield return hs_post; // Wait until the download is done
+
+        if (hs_post.error != null)
+        {
+            Debug.Log("There was an error with hs_post: " + hs_post.error);
+        }
+        else
+        {
+            string output = hs_post.text;
+            bool goodOut = false;
+            switch (output)
+            {
+                case "WRONG_HASH":
+                case "NOT_FOUND":
+                    Debug.Log(output);
+                    break;
+                default:
+                    //Debug.Log("Returning data: " + output);
+                    goodOut = true;
+                    break;
+            }
+
+            if (goodOut)
+            {
+                // username,kills,wins,plays,updated
+                string[] splitOutput = output.Split(',');
+                myGame.getLobbyHandler().CreateUserButton(splitOutput[0], userID);
             }
         }
     }
@@ -644,11 +730,5 @@ public class PhpInterface : MonoBehaviour {
             }
         }
     }
-    /*
-    get_hosted_lobbies.php
-receives: userid, hash
 
-returns lobbyid,lobbyid,...
-or COULD_NOT_FIND_LOBBIES
-     */
 }

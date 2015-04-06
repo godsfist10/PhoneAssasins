@@ -28,6 +28,8 @@ public class StartScreen : MonoBehaviour {
        
         myProfile = myGame.getMyProfile();
         myInterface = myGame.getMyInterface();
+
+        ShowYoSelf();
     }
 
     public void resetPassBoxes()

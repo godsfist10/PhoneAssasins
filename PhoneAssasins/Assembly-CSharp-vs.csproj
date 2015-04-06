@@ -678,9 +678,11 @@
      <Compile Include="Assets\Game.cs" />
      <Compile Include="Assets\InputBox.cs" />
      <Compile Include="Assets\Lobby.cs" />
+     <Compile Include="Assets\MainMenuHandler.cs" />
+     <Compile Include="Assets\MyProfileHandler.cs" />
      <Compile Include="Assets\PhpInterface.cs" />
      <Compile Include="Assets\Profile.cs" />
-     <Compile Include="Assets\Selection.cs" />
+     <Compile Include="Assets\ProfileViewer.cs" />
      <Compile Include="Assets\StartScreen.cs" />
      <None Include="Assets\AWSUnitySDK\AWSCore\Resources\aws_endpoints.xml" />
      <None Include="Assets\AWSUnitySDK\S3\Resources\aws-unity-sdk-version-1.0.3.txt" />
