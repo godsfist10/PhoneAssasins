@@ -12,7 +12,8 @@ public enum SCREENSTATE {
     PROFILE_VIEW,
     ACTIVE_GAMES,
     IN_GAME,
-    NULL
+    NULL,
+    IGNORE
 };
 
 
@@ -35,6 +36,8 @@ public class Game : MonoBehaviour {
     public MainMenuHandler mainMenuHandler;
     public MyProfileHandler myProfileHandler;
     public ProfileViewer profileViewer;
+    public ActiveLobbyHandler activeLobbyHandler;
+    public InGameHandler inGameHandler;
 
 	// Use this for initialization
 	void Start () 
@@ -81,6 +84,15 @@ public class Game : MonoBehaviour {
             case SCREENSTATE.MAIN_MENU:
                 mainMenuHandler.HideYoSelf();
                 break;
+            case SCREENSTATE.ACTIVE_GAMES:
+                activeLobbyHandler.HideYoSelf();
+                break;
+            case SCREENSTATE.IN_GAME:
+                inGameHandler.HideYoSelf();
+                break;
+            case SCREENSTATE.IGNORE:
+                ChangeScreenState(currentScreen, SCREENSTATE.IGNORE);
+                break;
         }
 
         switch (to)
@@ -94,7 +106,7 @@ public class Game : MonoBehaviour {
                 currentScreen = SCREENSTATE.MAIN_MENU;
                 break;
             case SCREENSTATE.LOBBY_SELECTION:
-                createLobbiesScript.showYoSelf(myProfile._userId);
+                createLobbiesScript.showYoSelf();
                 currentScreen = SCREENSTATE.LOBBY_SELECTION;
                 break;
             case SCREENSTATE.LOBBY_SCREEN:
@@ -108,12 +120,23 @@ public class Game : MonoBehaviour {
                 previousScreen = currentScreen;
                 currentScreen = SCREENSTATE.PROFILE_VIEW;
                 break;
+            case SCREENSTATE.ACTIVE_GAMES:
+                currentScreen = SCREENSTATE.ACTIVE_GAMES;
+                activeLobbyHandler.showYoSelf(myProfile._userId);
+                break;
+            case SCREENSTATE.IN_GAME:
+                currentScreen = SCREENSTATE.IN_GAME;
+                break;
             case SCREENSTATE.NULL:
                 if (changeTo == SCREENSTATE.LOBBY_SCREEN)
                 {
                     currentScreen = SCREENSTATE.LOBBY_SCREEN;
                     Refresh();
-                    
+                }
+                else if(changeTo == SCREENSTATE.IN_GAME)
+                {
+                    currentScreen = SCREENSTATE.IN_GAME;
+                    inGameHandler.ShowYoSelf();
                 }
                 break;
             
@@ -124,11 +147,19 @@ public class Game : MonoBehaviour {
     {
         if( currentScreen == SCREENSTATE.LOBBY_SELECTION)
         {
-            createLobbiesScript.showYoSelf(myProfile._userId);
+            createLobbiesScript.showYoSelf();
         }
         else if( currentScreen == SCREENSTATE.LOBBY_SCREEN)
         {
-            lobbyHandlerScript.ShowYoSelf(-1, true);
+            lobbyHandlerScript.Refresh();
+        }
+        if( currentScreen == SCREENSTATE.IN_GAME)
+        {
+            inGameHandler.Refresh();
+        }
+        if(currentScreen == SCREENSTATE.ACTIVE_GAMES)
+        {
+            activeLobbyHandler.showYoSelf(myProfile._userId);
         }
     }
 
@@ -142,22 +173,26 @@ public class Game : MonoBehaviour {
     public void EnterLobby(Object lobbyButton)
     {
         LobbySelectionButton buttonScript = ((GameObject)lobbyButton).GetComponent<LobbySelectionButton>();
-        Debug.Log("entering lobby: '" + buttonScript.lobbyName + "'");
         ChangeScreenState(currentScreen, SCREENSTATE.LOBBY_SCREEN);
 
         lobbyHandlerScript.ShowYoSelf(buttonScript.mlobbyID, false, buttonScript.mIsHost);
     }
 
-    public void ViewProfile(Object userButton, bool fromLobby = true)
+    public void EnterActiveLobby(Object lobbyButton)
+    {
+        ActiveLobbyButton buttonScript = ((GameObject)lobbyButton).GetComponent<ActiveLobbyButton>();
+        ChangeScreenState(currentScreen, SCREENSTATE.IN_GAME);
+
+        inGameHandler.ShowYoSelf(buttonScript.mlobbyID);
+
+    }
+
+    public void ViewProfile(Object userButton)
     {
         UserButton buttonScript = ((GameObject)userButton).GetComponent<UserButton>();
-        Debug.Log("Attempting to view profile of: '" + buttonScript.mUserName + "'");
 
-        if (fromLobby)
-        {
-            profileViewer.ShowYoSelf(buttonScript.mUserId);
-            ChangeScreenState(SCREENSTATE.LOBBY_SCREEN, SCREENSTATE.PROFILE_VIEW);
-        }
+        profileViewer.ShowYoSelf(buttonScript.mUserId);
+        ChangeScreenState(SCREENSTATE.IGNORE , SCREENSTATE.PROFILE_VIEW);
 
         //previousScreen = currentScreen;
         //IMPLEMENT SWAP TO PROFILE VIEW
@@ -192,5 +227,15 @@ public class Game : MonoBehaviour {
     public ProfileViewer getProfileViewer()
     {
         return profileViewer;
+    }
+
+    public ActiveLobbyHandler getActiveLobbyHandler()
+    {
+        return activeLobbyHandler;
+    }
+
+    public InGameHandler getInGameHandler()
+    {
+        return inGameHandler;
     }
 }

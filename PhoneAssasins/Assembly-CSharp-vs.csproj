@@ -671,11 +671,14 @@
      <Compile Include="Assets\AWSUnitySDK\S3\Amazon.S3\Util\S3PostUploadResponse.cs" />
      <Compile Include="Assets\AWSUnitySDK\S3\Amazon.S3\Util\S3PostUploadSignedPolicy.cs" />
      <Compile Include="Assets\AWSUnitySDK\S3\Amazon.S3\Util\TransferProgressArgs.cs" />
+     <Compile Include="Assets\Buttons\ActiveLobbyButton.cs" />
+     <Compile Include="Assets\Buttons\ActiveLobbyHandler.cs" />
+     <Compile Include="Assets\Buttons\DeleteButton.cs" />
      <Compile Include="Assets\Buttons\LobbySelectionButton.cs" />
      <Compile Include="Assets\Buttons\UserButton.cs" />
      <Compile Include="Assets\CreateLobbys.cs" />
-     <Compile Include="Assets\DeleteButton.cs" />
      <Compile Include="Assets\Game.cs" />
+     <Compile Include="Assets\InGameHandler.cs" />
      <Compile Include="Assets\InputBox.cs" />
      <Compile Include="Assets\Lobby.cs" />
      <Compile Include="Assets\MainMenuHandler.cs" />

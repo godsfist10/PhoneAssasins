@@ -25,6 +25,14 @@ public class UserButton : MonoBehaviour {
         ChangeUserName(userName);
         mUserName = userName;
         myGame = game;
+        mUserId = userId;
+        gameObject.GetComponent<UnityEngine.UI.Button>().interactable = true;
+    }
+
+    public void disableButton()
+    {
+        TextOnButton.text = "";
+        gameObject.GetComponent<UnityEngine.UI.Button>().interactable = false;
     }
 
     public void GoToProfile()

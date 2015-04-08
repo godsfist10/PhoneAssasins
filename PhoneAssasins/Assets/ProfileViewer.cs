@@ -29,7 +29,7 @@ public class ProfileViewer : MonoBehaviour {
 
     public void SetupRefresh(int playerId)
     {
-        StartCoroutine(myGame.getMyInterface().getUserData(playerId));
+        StartCoroutine(myGame.getMyInterface().getOtherUserData(playerId));
     }
 
     public void BackButtonPressed()

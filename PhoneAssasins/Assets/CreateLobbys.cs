@@ -7,6 +7,9 @@ public class CreateLobbys : MonoBehaviour {
     private PhpInterface myInterface = null;
     public Game myGame = null;
     public GameObject lobbyButtonPrefab;
+    public GameObject activeGameButtonPrefab;
+    public GameObject activeGameIndicatorPrefab;
+    public GameObject deleteButtonPrefab;
     public GameObject AddNewLobbyButton;
     public GameObject InvalidLobbyNameText;
     public GameObject LobbyCreatedText;
@@ -16,10 +19,13 @@ public class CreateLobbys : MonoBehaviour {
     public GameObject ButtonParentObject;
     public string NewLobbyName;
 
-    public int buttonOffsetY = 50;
+    private int buttonOffsetY = 50;
+    private int deleteXOffset = 100;
+    private int activeXOffset = 115;
 
     public List<GameObject> buttonList;
     public List<GameObject> hostButtonList;
+    public List<GameObject> deleteButtonList;
 
 	// Use this for initialization
 	void Start ()
@@ -48,14 +54,36 @@ public class CreateLobbys : MonoBehaviour {
         buttonList.Add(newButton);
     }
 	
-    public void CreateHostLobbyButton(string lobbyName, int lobbyId)
+    public void CreateHostLobbyButton(string lobbyName, int lobbyId, int lobbyStarted)
     {
         Vector3 pos = new Vector3(RefreshButton.transform.position.x, RefreshButton.transform.position.y + ((hostButtonList.Count + 1) * buttonOffsetY), 0);
+        Vector3 deletePos = new Vector3(pos.x + deleteXOffset, pos.y, pos.z);
+        Vector3 activePos = new Vector3(pos.x + activeXOffset, pos.y, pos.z);
 
-        GameObject newButton = (GameObject)Instantiate(lobbyButtonPrefab, pos, transform.rotation);
+        GameObject newButton = null;
+        if (lobbyStarted == 0)
+        {
+            newButton = (GameObject)Instantiate(lobbyButtonPrefab, pos, transform.rotation);
+            newButton.GetComponent<LobbySelectionButton>().Setup(lobbyName, lobbyId, myGame, true);
+
+            GameObject deleteButton = (GameObject)Instantiate(deleteButtonPrefab, deletePos, transform.rotation);
+            deleteButton.transform.SetParent(ButtonParentObject.transform);
+            deleteButton.GetComponent<DeleteButton>().Setup(this, lobbyId);
+            deleteButtonList.Add(deleteButton);
+        }
+        else
+        {
+            newButton = (GameObject)Instantiate(activeGameButtonPrefab, pos, transform.rotation);
+            newButton.GetComponent<ActiveLobbyButton>().Setup(lobbyName, lobbyId, myGame);
+
+            GameObject activeButton = (GameObject)Instantiate(activeGameIndicatorPrefab, activePos, transform.rotation);
+            activeButton.transform.SetParent(ButtonParentObject.transform);
+            deleteButtonList.Add(activeButton);
+        }
+
         newButton.transform.SetParent(ButtonParentObject.transform);
-        newButton.GetComponent<LobbySelectionButton>().Setup(lobbyName, lobbyId, myGame);
         hostButtonList.Add(newButton);
+
     }
 
     public void DestroyLobbyButtons()
@@ -71,6 +99,18 @@ public class CreateLobbys : MonoBehaviour {
             Destroy(hostButtonList[i]);
         }
         hostButtonList.Clear();
+
+        for (int i = 0; i < deleteButtonList.Count; i++)
+        {
+            Destroy(deleteButtonList[i]);
+        }
+        deleteButtonList.Clear();
+
+    }
+
+    public void DeleteLobby(int lobbyID)
+    {
+        StartCoroutine(myInterface.DeleteLobby(lobbyID));
     }
 
     public void HideYoSelf()
@@ -112,9 +152,10 @@ public class CreateLobbys : MonoBehaviour {
         LobbyCreatedText.SetActive(false);
     }
 
-    public void showYoSelf(int userID)
+    public void showYoSelf()
     {
         //Debug.Log(userID);
+        int userID = myGame.getMyProfile()._userId;
         ButtonParentObject.SetActive(true);
         DestroyLobbyButtons();
         PopulateButtons(userID);

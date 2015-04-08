@@ -56,13 +56,46 @@ public class Lobby : MonoBehaviour
         newButton.transform.SetParent(ButtonParentObject.transform);
         newButton.GetComponent<UserButton>().Setup(userName, userId, myGame);
         userList.Add(newButton);
+
+        if(myGame.getMyProfile()._userId == userId)
+        {
+            JoinLobbyButton.SetActive(false);
+            LeaveLobbyButton.SetActive(true);
+        }
+    }
+
+    public void ResetToJoin()
+    {
+        JoinLobbyButton.SetActive(true);
+        LeaveLobbyButton.SetActive(false);
+        DisbandLobbyButton.SetActive(false);
+        StartGameButton.SetActive(false);
     }
 
     public void HideYoSelf()
     {
         JoinLobbyButton.SetActive(true);
         LeaveLobbyButton.SetActive(false);
+        DisbandLobbyButton.SetActive(false);
+        StartGameButton.SetActive(false);
         ButtonParentObject.SetActive(false);
+    }
+
+    public void IsYOUTHEHOST()
+    {
+        if (mIsHost)
+        {
+            DisbandLobbyButton.SetActive(true);
+            StartGameButton.SetActive(true);
+            JoinLobbyButton.SetActive(false);
+            LeaveLobbyButton.SetActive(false);
+        }
+
+    }
+
+    public void Refresh()
+    {
+        ShowYoSelf(-1, true);
     }
 
     public void ShowYoSelf(int lobbyId = -1, bool refresh = false, bool isHost = false)
@@ -81,49 +114,14 @@ public class Lobby : MonoBehaviour
             else
                 currentLobbyId = lobbyId;
 
+            ResetToJoin();
             StartCoroutine(myInterface.getLobbyUsers_Output(lobbyId));
-            JoinOrLeaveSwap();
-        }
-    }
-
-    public void JoinOrLeaveSwap()
-    {
-        if (!mIsHost)
-        {
-            bool join = true;
-            for (int i = 0; i < userList.Count; i++)
-            {
-                if (userList[i].GetComponent<UserButton>().mUserId == myGame.getMyProfile()._userId)
-                {
-                    join = false;
-                    Debug.Log("I am in list");
-                }
-            }
-
-            if (join)
-            {
-                JoinLobbyButton.SetActive(true);
-                LeaveLobbyButton.SetActive(false);
-            }
-            else if (!join)
-            {
-                JoinLobbyButton.SetActive(false);
-                LeaveLobbyButton.SetActive(true);
-            }
-        }
-        else
-        {
-            DisbandLobbyButton.SetActive(true);
-            StartGameButton.SetActive(true);
-            JoinLobbyButton.SetActive(false);
-            LeaveLobbyButton.SetActive(false);
         }
     }
 
     public void ShowPresetupLobby()
     {
         ButtonParentObject.SetActive(true);
-        JoinOrLeaveSwap();
     }
 
     public void DestroyUserButtons()
