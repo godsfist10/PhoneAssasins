@@ -15,6 +15,8 @@ public class Lobby : MonoBehaviour
     public GameObject DisbandLobbyButton;
     public GameObject StartGameButton;
 
+    public GameObject morePlayersRequiredIndicator;
+
     public bool mIsHost = false;
     public int currentLobbyId = 0;
     private List<GameObject> userList;
@@ -45,7 +47,15 @@ public class Lobby : MonoBehaviour
 
     public void StartGame()
     {
-        StartCoroutine(myInterface.startGame(myGame.getMyProfile()._userId, currentLobbyId));
+        if (userList.Count < 2)
+        {
+            morePlayersRequiredIndicator.SetActive(true);
+        }
+        else
+        {
+            StartCoroutine(myInterface.startGame(myGame.getMyProfile()._userId, currentLobbyId));
+            BackButtonPressed();
+        }
     }
 
     public void CreateUserButton(string userName, int userId)
@@ -101,38 +111,30 @@ public class Lobby : MonoBehaviour
         else
             mIsHost = false;
 
+        IsYOUTHEHOST();
     }
 
     public void Refresh()
     {
-        ShowYoSelf(-1, true);
+        ShowYoSelf(-1);
     }
 
-    public void ShowYoSelf(int lobbyId = -1, bool refresh = false, bool isHost = false)
+    public void ShowYoSelf(int lobbyId = -1)
     {
-        if( !refresh)
-            mIsHost = isHost;
         ButtonParentObject.SetActive(true);
-        if (lobbyId == currentLobbyId && refresh == false)
-            ShowPresetupLobby();
+        mIsHost = false;
+        morePlayersRequiredIndicator.SetActive(false);
+        DestroyUserButtons();
+        ButtonParentObject.SetActive(true);
+        if (lobbyId == -1)
+            lobbyId = currentLobbyId;
         else
-        {
-            DestroyUserButtons();
-            ButtonParentObject.SetActive(true);
-            if (lobbyId == -1)
-                lobbyId = currentLobbyId;
-            else
-                currentLobbyId = lobbyId;
+            currentLobbyId = lobbyId;
 
-            ResetToJoin();
-            StartCoroutine(myInterface.getLobbyUsers_Output(lobbyId));
-            StartCoroutine(myInterface.getLobbyData(lobbyId));
-        }
-    }
-
-    public void ShowPresetupLobby()
-    {
-        ButtonParentObject.SetActive(true);
+        ResetToJoin();
+        StartCoroutine(myInterface.getLobbyUsers_Output(lobbyId));
+        StartCoroutine(myInterface.getLobbyData(lobbyId));
+        
     }
 
     public void DestroyUserButtons()

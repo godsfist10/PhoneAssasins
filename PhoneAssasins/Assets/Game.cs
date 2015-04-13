@@ -175,7 +175,7 @@ public class Game : MonoBehaviour {
         LobbySelectionButton buttonScript = ((GameObject)lobbyButton).GetComponent<LobbySelectionButton>();
         ChangeScreenState(currentScreen, SCREENSTATE.LOBBY_SCREEN);
 
-        lobbyHandlerScript.ShowYoSelf(buttonScript.mlobbyID, false, buttonScript.mIsHost);
+        lobbyHandlerScript.ShowYoSelf(buttonScript.mlobbyID);
     }
 
     public void EnterActiveLobby(Object lobbyButton)

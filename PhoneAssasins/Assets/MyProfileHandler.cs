@@ -24,6 +24,7 @@ public class MyProfileHandler : MonoBehaviour {
     public void ShowYoSelf()
     {
         ScreenButtonParent.SetActive(true);
+        myGame.UpdateUserData();
         SetupRefresh();
     }
 

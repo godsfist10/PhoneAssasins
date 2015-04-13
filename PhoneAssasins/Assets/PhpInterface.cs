@@ -109,7 +109,7 @@ public class PhpInterface : MonoBehaviour {
                     break;
                 case "USER_NOT_FOUND":
                     myGame.getStartScreenScript().IncorrectInformation();
-                    Debug.Log(output);
+                    //Debug.Log(output);
                     break;
                 default:    
                     myProfile._userId = int.Parse(output);
@@ -981,9 +981,8 @@ public class PhpInterface : MonoBehaviour {
             {
                 //lobbyid,userid,targetid,confirmed,updated
                 string[] data = output.Split(',');
-                
-                //myGame.getInGameHandler().KillPendingOnYou(true);
-                StartCoroutine(getKillerName(int.Parse(data[1])));   
+                if(data[3] == "0")
+                    StartCoroutine(getKillerName(int.Parse(data[1])));   
                 
             }
         }
@@ -1076,7 +1075,6 @@ public class PhpInterface : MonoBehaviour {
     {
         string urlCall = FUNCTIONSURL + "get_kill_status.php?";
         string hash = Md5Sum(userID.ToString() + lobbyID.ToString() + SECRET);
-
         string post_url = urlCall + "userid=" + userID.ToString() + "&lobbyid=" + lobbyID.ToString() + "&hash=" + hash;
         //Debug.Log("PostUrl:  " + post_url);
         WWW hs_post = new WWW(post_url);
@@ -1099,7 +1097,7 @@ public class PhpInterface : MonoBehaviour {
                     myGame.getInGameHandler().KillPending(false);
                     break;
                 case "0":
-                    //Debug.Log("kill pending");
+                    Debug.Log("kill pending");
                     myGame.getInGameHandler().KillPending(true);
                     break;
                 case "1":
@@ -1108,8 +1106,9 @@ public class PhpInterface : MonoBehaviour {
                     break;
                 case "-1":
                     //denied
+                    //Debug.Log("denied the kill");
                     myGame.getInGameHandler().TheyDeniedTheKill();
-                    Debug.Log(output);
+                    //Debug.Log(output);
                     break;
                 default:
                     Debug.Log("Unusual output: " + output);
