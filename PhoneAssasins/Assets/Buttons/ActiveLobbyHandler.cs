@@ -10,6 +10,7 @@ public class ActiveLobbyHandler : MonoBehaviour {
     public GameObject ButtonParentObject;
     public GameObject ActiveLobbyButtonPrefab;
     public GameObject RefreshButton;
+    public GameObject NoActiveGamesIndicator;
 
     public List<GameObject> buttonList;
 
@@ -23,6 +24,7 @@ public class ActiveLobbyHandler : MonoBehaviour {
         myInterface = myGame.getMyInterface();
 
         ButtonParentObject.SetActive(false);
+        NoActiveGamesIndicator.SetActive(false);
 	}
 
     public void CreateActiveLobbyButton(string lobbyName, int lobbyId)
@@ -56,12 +58,19 @@ public class ActiveLobbyHandler : MonoBehaviour {
         //Debug.Log(userID);
         ButtonParentObject.SetActive(true);
         DestroyLobbyButtons();
+        NoActiveGamesIndicator.SetActive(false);
         PopulateButtons(userID);
     }
 
     public void PopulateButtons(int userId)
     {
         StartCoroutine(myInterface.GetActiveLobbies(userId));
+    }
+
+
+    public void NoActiveLobbies()
+    {
+        NoActiveGamesIndicator.SetActive(true);
     }
 
     public void BackButtonPressed()

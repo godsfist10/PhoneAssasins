@@ -493,6 +493,40 @@ public class PhpInterface : MonoBehaviour {
             }
         }
     }
+
+    public IEnumerator DeleteKillConfirmation(int lobbyID, int userID, int targetid)
+    {
+        string urlCall = FUNCTIONSURL + "delete_kill.php?";
+        string hash = Md5Sum(lobbyID.ToString() + userID.ToString() + targetid.ToString() + SECRET);
+
+        string post_url = urlCall + "lobbyid=" + lobbyID.ToString() + "&userid=" + userID.ToString() + "&targetid=" + targetid.ToString() + "&hash=" + hash;
+        //Debug.Log("PostUrl:  " + post_url);
+        WWW hs_post = new WWW(post_url);
+
+        yield return hs_post; // Wait until the download is done
+
+        if (hs_post.error != null)
+        {
+            Debug.Log("There was an error with hs_post: " + hs_post.error);
+        }
+        else
+        {
+            string output = hs_post.text;
+            switch (output)
+            {
+                case "WRONG_HASH":
+                    Debug.Log(output);
+                    break;
+                case "KILL_DELETED":
+                    myGame.getInGameHandler().KillRequestDeleted();
+                    break;
+                default:
+                    Debug.Log("Unusual output: " + output);
+                    break;
+            }
+        }
+    }
+  
     //GETTERS
 
     public IEnumerator getUserData(int userID)
@@ -808,9 +842,10 @@ public class PhpInterface : MonoBehaviour {
             {
                 //lobbyname,hostid,gamestarted,updated,created
                 string[] lobbyData = output.Split(',');
-                Debug.Log("Lobby Name:  " + lobbyData[0]);
-                Debug.Log("Host ID:  " + lobbyData[1]);
-                Debug.Log("Game Started (0 false; 1 true):  " + lobbyData[2]);
+                //Debug.Log("Lobby Name:  " + lobbyData[0]);
+                //Debug.Log("Host ID:  " + lobbyData[1]);
+                myGame.getLobbyHandler().HostCheck(int.Parse(lobbyData[1]));
+                //Debug.Log("Game Started (0 false; 1 true):  " + lobbyData[2]);
                 //Debug.Log("Updated:  " + lobbyData[3]);
                 //Debug.Log("Created:  " + lobbyData[3]);
             }
@@ -842,7 +877,7 @@ public class PhpInterface : MonoBehaviour {
                     break;
                 case "":
                 case "COULD_NOT_FIND_LOBBIES":
-                    //Debug.Log("No Lobbies Available");
+                    myGame.getLobbyCreationScript().NoLobbiesAvailable();
                     break;
                 default:
                     //Debug.Log("Returning data: " + output);
@@ -888,7 +923,7 @@ public class PhpInterface : MonoBehaviour {
                     break;
                 case "":
                 case "COULD_NOT_FIND_LOBBIES":
-                    //Debug.Log("No Lobbies You Host Available");
+                    myGame.getLobbyCreationScript().NoHostedLobbiesAvailable();
                     break;
                 default:
                     //Debug.Log("Returning data hosted lobbies: " + output);
@@ -1073,6 +1108,7 @@ public class PhpInterface : MonoBehaviour {
                     break;
                 case "-1":
                     //denied
+                    myGame.getInGameHandler().TheyDeniedTheKill();
                     Debug.Log(output);
                     break;
                 default:
@@ -1147,7 +1183,7 @@ public class PhpInterface : MonoBehaviour {
                     break;
                 case "":
                 case "COULD_NOT_FIND_LOBBIES":
-                    Debug.Log("No Active Lobbies Available");
+                    myGame.getActiveLobbyHandler().NoActiveLobbies();
                     break;
                 default:
                     //Debug.Log("Returning data: " + output);

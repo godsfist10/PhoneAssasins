@@ -9,10 +9,14 @@ public class InGameHandler : MonoBehaviour {
     public GameObject killConfirmedParentObject;
     public GameObject TargetButtonGroup;
     public GameObject pendingIndicator;
+    public GameObject deniedKillIndicator;
     public UnityEngine.UI.Button killedTargetButton;
-
+    public GameObject winButton;
+   
     public UnityEngine.UI.Text MyKillersName;
     public GameObject myTargetObject;
+
+    public bool mGameOver = false;
 
     //private bool KillButtonPressedOnce = false;
     private int previousId = -1;
@@ -38,10 +42,13 @@ public class InGameHandler : MonoBehaviour {
         else
             lobbyId = previousId;
 
+        mGameOver = false;
         TargetButtonGroup.SetActive(true);
         ButtonParentObject.SetActive(true);
         killConfirmedParentObject.SetActive(false);
+        winButton.SetActive(false);
         pendingIndicator.SetActive(false);
+        deniedKillIndicator.SetActive(false);
         killedTargetButton.interactable = false;
         StartCoroutine(myInterface.getLobbyUsers(lobbyId));
     }
@@ -63,8 +70,12 @@ public class InGameHandler : MonoBehaviour {
 
     public void setupTargetButton(int playerId, string playerName)
     {
-
-        myTargetObject.GetComponent<UserButton>().Setup(playerName, playerId, myGame);
+        if( playerId == myGame.getMyProfile()._userId)
+        {
+            GameOver();
+        }
+        else
+            myTargetObject.GetComponent<UserButton>().Setup(playerName, playerId, myGame);
     }
 
     public void KilledThemButtonPressed()
@@ -82,17 +93,49 @@ public class InGameHandler : MonoBehaviour {
 
     public void KillPending(bool val)
     {
-        if(val)
+        if (!mGameOver)
         {
-            pendingIndicator.SetActive(true);
-            killedTargetButton.interactable = false;
+            if (val)
+            {
+                deniedKillIndicator.SetActive(false);
+                pendingIndicator.SetActive(true);
+                killedTargetButton.interactable = false;
+            }
+            else
+            {
+                deniedKillIndicator.SetActive(false);
+                pendingIndicator.SetActive(false);
+                killedTargetButton.interactable = true;
+            }
         }
-        else
-        {
-            pendingIndicator.SetActive(false);
-            killedTargetButton.interactable = true;
-        }
+    }
 
+    public void TheyDeniedTheKill()
+    {
+        deniedKillIndicator.SetActive(true);
+        pendingIndicator.SetActive(false);
+        killedTargetButton.interactable = true;
+    }
+
+    public void DeleteKillRequest()
+    {
+        int userID = myGame.getMyProfile()._userId;
+        int targetID = myTargetObject.GetComponent<UserButton>().mUserId;
+        StartCoroutine(myInterface.DeleteKillConfirmation(previousId, userID, targetID));
+    }
+
+    public void KillRequestDeleted()
+    {
+        deniedKillIndicator.SetActive(false);
+        pendingIndicator.SetActive(false);
+        killedTargetButton.interactable = true;
+    }
+
+    public void DeleteThisLobby()
+    {
+        winButton.SetActive(false);
+        StartCoroutine(myInterface.DeleteLobby(previousId));
+        BackButtonPressed();
     }
 
     public void KilledMe_Deny()
@@ -101,23 +144,35 @@ public class InGameHandler : MonoBehaviour {
         killConfirmedParentObject.SetActive(false);
     }
 
+    public void GameOver()
+    {
+        mGameOver = true;
+        TargetButtonGroup.SetActive(false);
+        winButton.SetActive(true);
+    }
+
     public void KillPendingOnYou(bool val)
     {
-        if( val)
+        if (!mGameOver)
         {
-            killConfirmedParentObject.SetActive(true);
-        }
-        else
-        {
-            killConfirmedParentObject.SetActive(false);
-            
-        }
+            if (val)
+            {
+                killConfirmedParentObject.SetActive(true);
+            }
+            else
+            {
+                killConfirmedParentObject.SetActive(false);
 
+            }
+        }
     }
 
     public void DeathThreat(string assasinatorsName)
     {
-        setAssasinatorsName(assasinatorsName);
-        killConfirmedParentObject.SetActive(true);
+        if (!mGameOver)
+        {
+            setAssasinatorsName(assasinatorsName);
+            killConfirmedParentObject.SetActive(true);
+        }
     }
 }

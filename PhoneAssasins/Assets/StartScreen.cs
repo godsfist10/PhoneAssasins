@@ -64,6 +64,11 @@ public class StartScreen : MonoBehaviour {
         newUserHitOnce = true;
     }
 
+    public void QuitButtonHit()
+    {
+        Application.Quit();
+    }
+
     public void NewUserButtonHit()
     {
         if (!newUserHitOnce)

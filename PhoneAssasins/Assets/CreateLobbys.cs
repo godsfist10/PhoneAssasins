@@ -16,6 +16,9 @@ public class CreateLobbys : MonoBehaviour {
     public GameObject RefreshButton;
     public GameObject NewLobbyInputField;
 
+    public GameObject noLobbiesYouHostIndicator;
+    public GameObject noLobbiesAvailableIndicator;
+
     public GameObject ButtonParentObject;
     public string NewLobbyName;
 
@@ -155,10 +158,22 @@ public class CreateLobbys : MonoBehaviour {
     public void showYoSelf()
     {
         //Debug.Log(userID);
+        noLobbiesYouHostIndicator.SetActive(false);
+        noLobbiesAvailableIndicator.SetActive(false);
         int userID = myGame.getMyProfile()._userId;
         ButtonParentObject.SetActive(true);
         DestroyLobbyButtons();
         PopulateButtons(userID);
+    }
+
+    public void NoLobbiesAvailable()
+    {
+        noLobbiesAvailableIndicator.SetActive(true);
+    }
+
+    public void NoHostedLobbiesAvailable()
+    {
+        noLobbiesYouHostIndicator.SetActive(true);
     }
 
     public void PopulateButtons(int userId)

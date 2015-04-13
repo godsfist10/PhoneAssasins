@@ -70,6 +70,7 @@ public class Lobby : MonoBehaviour
         LeaveLobbyButton.SetActive(false);
         DisbandLobbyButton.SetActive(false);
         StartGameButton.SetActive(false);
+        IsYOUTHEHOST();
     }
 
     public void HideYoSelf()
@@ -90,6 +91,15 @@ public class Lobby : MonoBehaviour
             JoinLobbyButton.SetActive(false);
             LeaveLobbyButton.SetActive(false);
         }
+
+    }
+
+    public void HostCheck(int hostID)
+    {
+        if (myGame.getMyProfile()._userId == hostID)
+            mIsHost = true;
+        else
+            mIsHost = false;
 
     }
 
@@ -116,6 +126,7 @@ public class Lobby : MonoBehaviour
 
             ResetToJoin();
             StartCoroutine(myInterface.getLobbyUsers_Output(lobbyId));
+            StartCoroutine(myInterface.getLobbyData(lobbyId));
         }
     }
 
