@@ -12,6 +12,8 @@ public class ActiveLobbyHandler : MonoBehaviour {
     public GameObject RefreshButton;
     public GameObject NoActiveGamesIndicator;
 
+	public bool RefreshHit = false;
+
     public List<GameObject> buttonList;
 
     public int buttonOffsetY = 50;
@@ -55,11 +57,15 @@ public class ActiveLobbyHandler : MonoBehaviour {
 
     public void showYoSelf(int userID)
     {
-        //Debug.Log(userID);
-        ButtonParentObject.SetActive(true);
-        DestroyLobbyButtons();
-        NoActiveGamesIndicator.SetActive(false);
-        PopulateButtons(userID);
+		if (!RefreshHit) 
+		{
+			RefreshHit = true;
+			//Debug.Log(userID);
+			ButtonParentObject.SetActive (true);
+			DestroyLobbyButtons ();
+			NoActiveGamesIndicator.SetActive (false);
+			PopulateButtons (userID);
+		}
     }
 
     public void PopulateButtons(int userId)

@@ -1,8 +1,13 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\InGameHandler.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\PhpInterface.cs">
     <Files>
       <File FileName="Assets\InGameHandler.cs" Line="52" Column="6" />
+      <File FileName="Assets\PhpInterface.cs" Line="1175" Column="10" />
+      <File FileName="Assets\CreateLobbys.cs" Line="142" Column="43" />
+      <File FileName="Assets\Game.cs" Line="126" Column="23" />
+      <File FileName="Assets\Lobby.cs" Line="133" Column="20" />
+      <File FileName="Assets\ActiveLobbyHandler.cs" Line="73" Column="62" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -178,6 +178,12 @@ public class Game : MonoBehaviour {
         lobbyHandlerScript.ShowYoSelf(buttonScript.mlobbyID);
     }
 
+	public void EnterLobby (int lobbyId)
+	{
+		ChangeScreenState(currentScreen, SCREENSTATE.LOBBY_SCREEN);
+		lobbyHandlerScript.ShowYoSelf(lobbyId);
+	}
+
     public void EnterActiveLobby(Object lobbyButton)
     {
         ActiveLobbyButton buttonScript = ((GameObject)lobbyButton).GetComponent<ActiveLobbyButton>();
@@ -186,6 +192,12 @@ public class Game : MonoBehaviour {
         inGameHandler.ShowYoSelf(buttonScript.mlobbyID);
 
     }
+
+	public void EnterActiveLobby(int lobbyID)
+	{
+		ChangeScreenState(currentScreen, SCREENSTATE.IN_GAME);
+		inGameHandler.ShowYoSelf(lobbyID);
+	}
 
     public void ViewProfile(Object userButton)
     {

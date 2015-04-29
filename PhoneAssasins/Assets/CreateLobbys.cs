@@ -142,11 +142,10 @@ public class CreateLobbys : MonoBehaviour {
         LobbyCreatedText.SetActive(false);
     }
 
-    public void LobbyCreated()
+    public void LobbyCreated(int newLobbyId)
     {
         InvalidLobbyNameText.SetActive(false);
-        LobbyCreatedText.SetActive(true);
-        myGame.Refresh();
+		myGame.EnterLobby (newLobbyId);
     }
 
     public void ResetAll()

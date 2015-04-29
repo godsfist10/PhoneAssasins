@@ -54,7 +54,6 @@ public class Lobby : MonoBehaviour
         else
         {
             StartCoroutine(myInterface.startGame(myGame.getMyProfile()._userId, currentLobbyId));
-            BackButtonPressed();
         }
     }
 

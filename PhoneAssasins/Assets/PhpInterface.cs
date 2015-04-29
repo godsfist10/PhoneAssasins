@@ -270,10 +270,12 @@ public class PhpInterface : MonoBehaviour {
             switch (output)
             {
                 case "WRONG_HASH":
-                case "GAME_STARTED":
                 case "LOBBY_NOT_FOUND":
                     //Debug.Log(output);
                     break;
+				case "GAME_STARTED":
+				myGame.EnterActiveLobby(lobbyID);
+					break;
                 default:
                     Debug.Log("Output not consistant with list: " + output);
                     break;
@@ -304,7 +306,7 @@ public class PhpInterface : MonoBehaviour {
                     Debug.Log(output);
                     break;
                 default:
-                    myGame.getLobbyCreationScript().LobbyCreated();
+                    myGame.getLobbyCreationScript().LobbyCreated(int.Parse(output));
                     //Debug.Log("Lobby ID:  " + output);
                     break;
             }
@@ -1193,6 +1195,8 @@ public class PhpInterface : MonoBehaviour {
             if (goodOut)
             {
                 //lobbyname,hostid,gamestarted,updated,created
+				myGame.getActiveLobbyHandler().DestroyLobbyButtons();
+				myGame.getActiveLobbyHandler().RefreshHit = false;
                 string[] AvailableLobbies = output.Split(',');
                 for (int i = 0; i < AvailableLobbies.Length; i++)
                 {
